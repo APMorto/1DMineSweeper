@@ -1,3 +1,190 @@
 <!DOCTYPE html>
 
+<head>
+    <style>
+
+        .cellContainer{
+            /*justify-content: space-around;*/
+        }
+
+    .cell {
+        width: 50px;
+        height: 50px;
+        background-color: rgb(177, 177, 177);
+        display: block;
+        text-align: center;
+        justify-items: center;
+        line-height: 50px;
+        font-size: 10;
+        margin: 2px;
+    }
+
+    .emptyCell {
+        width: 50px;
+        height: 50px;
+        background-color: rgb(241, 241, 241);
+        display: block;
+        text-align: center;
+        justify-items: center;
+        line-height: 50px;
+        font-size: 10;
+        margin: 2px;
+    }
+
+    .explodedCell {
+        width: 50px;
+        height: 50px;
+        background-color: rgb(155, 53, 53);
+        display: block;
+        text-align: center;
+        justify-items: center;
+        line-height: 50px;
+        font-size: 10;
+        margin: 2px;
+    }
+    </style>
+
+</head>
+<body>
+    <div>
+        <button onClick="restart()" style="font-size: 100px;">Restart</button>
+    </div>
+
+    <div id="cellContainer" class="cellContainer">
+        <span class="cell">cum</span>
+    </div>
+
+    <script>
+        var board = [];
+        var revealed = [];
+        const boardSize = 15;
+        var mineChance = 0.3;
+
+        var cells = [];
+        
+
+        function restart() {
+            stopRotate();
+            board = [];
+            revealed = [];
+            cells = [];
+
+            // be able to put new cells into DOM
+            let container = document.getElementById("cellContainer");
+            container.innerHTML = "";
+
+
+            for (let i = 0; i < boardSize; i++) {
+                //if (Math.random() < mineChance) {
+                //    board.push(true);
+                //}
+                board.push(Math.random() < mineChance);
+
+                let cell = document.createElement("span");
+                cell.className="cell";
+                // use id to denote the index
+                cell.id=i;
+                cells.push(cell);
+                container.appendChild(cell);
+
+                revealed.push(false);
+
+                cell.onclick = e => reveal(i);
+
+                cell.addEventListener('contextmenu', event => {
+                    event.preventDefault(); // prevent the default right-click menu from appearing
+                    flag(i);
+                });
+            }
+        }
+
+        function reveal(index) {
+            console.log(index)
+            if (revealed[index]) {
+                return;
+            }
+
+            if (board[index]) {
+                console.log("booming")
+                console.log(index);
+                console.log(board);
+                explode(index);
+            } else {
+                revealed[index] = true;
+                // get how many adjacent bombs
+                let adjacent = 0;
+                if (index > 0 && board[index-1]) {adjacent += 1;}
+                if (index + 1 < boardSize && board[index+1]) {adjacent += 1;}
+                console.log(adjacent)
+                
+                if (adjacent === 0) {
+                    if (index > 0) {reveal(index - 1);}
+                    if (index < boardSize-1) {reveal(index + 1);}
+                    let cell = cells[index];
+                    cell.className="emptyCell"
+                    cell.innerHTML = "";
+                }
+
+                else {
+                    console.log(adjacent);
+                    let cell = cells[index];
+                    cell.className="emptyCell"
+                    cell.innerHTML = adjacent;
+                }
+            }
+
+            checkComplete();
+        }
+
+        function explode(index) {
+            console.log("boom")
+            let cell = cells[index];
+            cell.className = "explodedCell"
+            cell.innerHTML = "💣"
+
+            for (let i = 0; i < boardSize; i++) {
+                if (board[i]) {
+                    cells[i].innerHTML = "💣";
+                }
+            }
+        }
+
+        function flag(index) {
+            if (revealed[index]) {
+                return;
+            }
+            cells[index].innerHTML = cells[index].innerHTML === "🚩" ? "" : "🚩";
+        }
+
+        function checkComplete() {
+            let isDone = true;
+            for (let i = 0; i < boardSize; i++) {
+                if (!revealed[i] && !board[i]) {
+                    isDone = false;
+                    break;
+                }
+            }
+
+            if (isDone && myInterval === -1) {
+                //document.body.style.setProperty("-webkit-transform", "rotate(-90deg)", null);
+                myInterval = setInterval(rotate, 20);
+            }
+        }
+
+        var myInterval = -1;
+        var rotation = 0;
+        function rotate() {
+            rotation += 2;
+            document.body.style.setProperty("-webkit-transform", `rotate(${rotation}deg`, null);
+        }
+
+        function stopRotate() {
+            if (myInterval !== -1) {clearInterval(myInterval);}
+            document.body.style.setProperty("-webkit-transform", "rotate(0deg)", null);
+            myInterval = -1;
+        }
+
+        restart();
+    </script>
+</body>
 Fuck BP
