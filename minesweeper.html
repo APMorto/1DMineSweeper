@@ -50,7 +50,13 @@
 </head>
 <body>
     <div>
-        <button onClick="restart()" style="font-size: 100px;">Restart</button><br>
+        <button onClick="restart()" style="font-size: 100px;">Restart</button>        <br>
+        <input type="text" id="boardSizeInput"><button onClick="setBoardSize(document.getElementById('boardSizeInput').value)">Set Board Size</button>
+        <br>
+        Mine spawn %:<input type="range" min="0" max="100" value="30" class="slider" id="bombChanceSlider" onClick=
+        "mineChance=document.getElementById('bombChanceSlider').value / 100; document.getElementById('bombChanceDisplay').innerHTML = document.getElementById('bombChanceSlider').value + '%';"> 
+        <span id="bombChanceDisplay">30%</span>
+        <br>
         <font size="+2" style="margin: 15px;">💣: <span id="bombsLeft"></span></font>
     </div>
 
@@ -61,7 +67,7 @@
     <script>
         var board = [];
         var revealed = [];
-        const boardSize = 15;
+        var boardSize = 15;
         var mineChance = 0.3;
         var existingMines = -1;
         var markedMines = 0;
@@ -210,6 +216,7 @@
             if (myInterval !== -1) {clearInterval(myInterval);}
             document.body.style.setProperty("-webkit-transform", "rotate(0deg)", null);
             myInterval = -1;
+            rotation = 0;
         }
 
         /** Updates the mine counter */
@@ -222,6 +229,19 @@
             });
 
             document.getElementById("bombsLeft").innerHTML = existingMines - markedMines;
+        }
+
+        /**
+         * Updates the size of the board
+         */
+        function setBoardSize(n) {
+            let num = Number(n);
+            if (isNaN(num)) {
+                return;
+            }
+
+            boardSize = num;
+            restart();
         }
 
         restart();
