@@ -5,6 +5,8 @@
 
         .cellContainer{
             /*justify-content: space-around;*/
+            /*display: inline-flexbox;*/
+            flex-wrap: wrap;
         }
 
     .cell {
@@ -13,10 +15,11 @@
         background-color: rgb(177, 177, 177);
         display: block;
         text-align: center;
-        justify-items: center;
+        /*justify-items: center;*/
         line-height: 50px;
         font-size: 10;
         margin: 2px;
+        /*display: inline-block; */ /* Makes the cells appear in a row */
     }
 
     .emptyCell {
@@ -47,7 +50,8 @@
 </head>
 <body>
     <div>
-        <button onClick="restart()" style="font-size: 100px;">Restart</button>
+        <button onClick="restart()" style="font-size: 100px;">Restart</button><br>
+        <font size="+2" style="margin: 15px;">💣: <span id="bombsLeft"></span></font>
     </div>
 
     <div id="cellContainer" class="cellContainer">
@@ -59,10 +63,14 @@
         var revealed = [];
         const boardSize = 15;
         var mineChance = 0.3;
+        var existingMines = -1;
+        var markedMines = 0;
 
         var cells = [];
         
-
+        /**
+         * Sets initial board state / resets board state
+         */
         function restart() {
             stopRotate();
             board = [];
@@ -96,8 +104,20 @@
                     flag(i);
                 });
             }
+
+            markedMines = 0;
+            existingMines = 0;
+            board.map(isMine => {
+                if (isMine) {
+                    existingMines += 1;
+                }
+            })
+            updateMarkedMines();
         }
 
+        /**
+         * "clicks" a tile, showing count, unveiling cavity or *BOOMS*
+         */
         function reveal(index) {
             console.log(index)
             if (revealed[index]) {
@@ -134,8 +154,10 @@
             }
 
             checkComplete();
+            updateMarkedMines();
         }
 
+        /** BOOM */
         function explode(index) {
             console.log("boom")
             let cell = cells[index];
@@ -149,13 +171,17 @@
             }
         }
 
+        /** Toggles flag on a cell if applicable */
         function flag(index) {
             if (revealed[index]) {
                 return;
             }
+
             cells[index].innerHTML = cells[index].innerHTML === "🚩" ? "" : "🚩";
+            updateMarkedMines();
         }
 
+        /** checks that all non mine tiles are revealed */
         function checkComplete() {
             let isDone = true;
             for (let i = 0; i < boardSize; i++) {
@@ -171,17 +197,31 @@
             }
         }
 
-        var myInterval = -1;
+        /** Starts rotating the page for some god forsaken reason */
+        var myInterval = -1;    // set to -1 if we are not rotating
         var rotation = 0;
         function rotate() {
             rotation += 2;
             document.body.style.setProperty("-webkit-transform", `rotate(${rotation}deg`, null);
         }
 
+        /** stops the rotation and resets document to normal rotation */
         function stopRotate() {
             if (myInterval !== -1) {clearInterval(myInterval);}
             document.body.style.setProperty("-webkit-transform", "rotate(0deg)", null);
             myInterval = -1;
+        }
+
+        /** Updates the mine counter */
+        function updateMarkedMines() {
+            markedMines = 0;
+            cells.map(cell => {
+                if (cell.innerHTML === "🚩") {
+                    markedMines += 1;
+                };
+            });
+
+            document.getElementById("bombsLeft").innerHTML = existingMines - markedMines;
         }
 
         restart();
